@@ -1,0 +1,55 @@
+# Security & Credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+.env
+.env.*
+.env.local
+.env.production
+secrets/
+credentials/
+*.credentials
+
+# Logs
+*.log
+logs/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Grafana dashboard exports (add selectively)
+# grafana/dashboards/*.json
+
+# Node / npm (if any tooling is added)
+node_modules/
+npm-debug.log*
+
+# Python (if any scripts are added)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Terraform (future)
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak

@@ -1,0 +1,81 @@
+# =============================================================================
+# Prometheus Alert Rules — Node Exporter
+# AWS EC2 Infrastructure Monitoring Stack
+# =============================================================================
+
+groups:
+  - name: node_alerts
+    rules:
+
+      # ---------------------------------------------------------------------------
+      # NodeDown — Fires when Node Exporter stops reporting
+      # ---------------------------------------------------------------------------
+      - alert: NodeDown
+        expr: up{job="node-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node Exporter is down on {{ $labels.instance }}"
+          description: >
+            Node Exporter on instance {{ $labels.instance }} has been unreachable
+            for more than 2 minutes. The monitored EC2 server may be down or
+            port 9100 may be blocked.
+
+      # ---------------------------------------------------------------------------
+      # HighCPUUsage — Fires when CPU usage exceeds 80% for 5 minutes
+      # ---------------------------------------------------------------------------
+      - alert: HighCPUUsage
+        expr: >
+          100 - (
+            avg by(instance) (
+              rate(node_cpu_seconds_total{mode="idle"}[5m])
+            ) * 100
+          ) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: >
+            CPU usage on instance {{ $labels.instance }} has been above 80%
+            for more than 5 minutes. Current value: {{ $value | printf "%.2f" }}%.
+
+      # ---------------------------------------------------------------------------
+      # HighMemoryUsage — Fires when memory usage exceeds 85% for 5 minutes
+      # ---------------------------------------------------------------------------
+      - alert: HighMemoryUsage
+        expr: >
+          (
+            1 - (
+              node_memory_MemAvailable_bytes /
+              node_memory_MemTotal_bytes
+            )
+          ) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: >
+            Memory usage on instance {{ $labels.instance }} has exceeded 85%
+            for more than 5 minutes. Current value: {{ $value | printf "%.2f" }}%.
+
+      # ---------------------------------------------------------------------------
+      # LowDiskSpace — Fires when root filesystem free space drops below 15%
+      # ---------------------------------------------------------------------------
+      - alert: LowDiskSpace
+        expr: >
+          (
+            node_filesystem_avail_bytes{mountpoint="/", fstype!="tmpfs"} /
+            node_filesystem_size_bytes{mountpoint="/", fstype!="tmpfs"}
+          ) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: >
+            Available disk space on {{ $labels.instance }} (mountpoint: /)
+            has dropped below 15%. Current available: {{ $value | printf "%.2f" }}%.
+            Consider cleaning up or expanding storage.

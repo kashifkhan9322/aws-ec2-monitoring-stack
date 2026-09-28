@@ -1,0 +1,43 @@
+# =============================================================================
+# systemd Service Unit — Prometheus Node Exporter
+# AWS EC2 Infrastructure Monitoring Stack
+# =============================================================================
+#
+# Installation:
+#   sudo cp node_exporter.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now node_exporter
+#   sudo systemctl status node_exporter
+#
+# Prerequisites:
+#   - node_exporter binary at /usr/local/bin/node_exporter
+#   - Dedicated system user: node_exporter
+#     Create with: sudo useradd --no-create-home --shell /bin/false node_exporter
+#
+# Test the metrics endpoint:
+#   curl http://localhost:9100/metrics
+#
+# =============================================================================
+
+[Unit]
+Description=Prometheus Node Exporter
+Documentation=https://github.com/prometheus/node_exporter
+After=network.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+# Restart the service if it crashes
+Restart=on-failure
+RestartSec=5s
+
+# Security hardening — restrict filesystem access
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
